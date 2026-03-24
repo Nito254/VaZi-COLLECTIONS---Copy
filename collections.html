@@ -265,6 +265,46 @@ z-index:1500;
 0%{transform:translateX(-50%) translateY(0);}
 100%{transform:translateX(-50%) translateY(-10px);}
 }
+  .category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 40px;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(212,175,55,0.2);
+  justify-content: center;
+  position: sticky;
+  top: 70px;
+  z-index: 900;
+}
+.tab-btn {
+  padding: 8px 18px;
+  border: 1.5px solid rgba(212,175,55,0.4);
+  border-radius: 25px;
+  background: rgba(15,15,15,0.85);
+  color: #aaa;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.tab-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(212,175,55,0.35);
+  transform: translateY(-2px);
+}
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--gold), #b8942e);
+  color: #000;
+  border-color: var(--gold);
+  font-weight: 700;
+  box-shadow: 0 0 16px rgba(212,175,55,0.6), 0 0 30px rgba(155,89,182,0.25);
+  transform: translateY(-2px);
+}
 </style>
 </head>
 <body>
@@ -287,6 +327,22 @@ z-index:1500;
 <h1 style="color:#9b59b6;">Somali Luxury Redefined</h1>
 <p>Premium Cultural Fashion | Nairobi</p>
 </section>
+  <!-- Category Filter Tabs -->
+<div class="category-tabs">
+  <button class="tab-btn active" onclick="filterCategory('All',this)"> All</button>
+  <button class="tab-btn" onclick="filterCategory('Dirac',this)"> Dirac</button>
+  <button class="tab-btn" onclick="filterCategory('Baati',this)"> Baati</button>
+  <button class="tab-btn" onclick="filterCategory('Guntiino',this)"> Guntiino</button>
+  <button class="tab-btn" onclick="filterCategory('Khimar',this)"> Khimar</button>
+  <button class="tab-btn" onclick="filterCategory('Macawiis',this)"> Macawiis</button>
+  <button class="tab-btn" onclick="filterCategory('Koofiyad',this)"> Koofiyad</button>
+  <button class="tab-btn" onclick="filterCategory('Khamiis',this)"> Khamiis</button>
+  <button class="tab-btn" onclick="filterCategory('Kaftan',this)"> Kaftan</button>
+  <button class="tab-btn" onclick="filterCategory('Jewelry',this)"> Jewelry</button>
+  <button class="tab-btn" onclick="filterCategory('Sandals',this)"> Sandals</button>
+  <button class="tab-btn" onclick="filterCategory('Belt',this)"> Belts</button>
+  <button class="tab-btn" onclick="filterCategory('Suit',this)"> Suits</button>
+</div>
 
 <button onclick="toggleCart()" class="gold-btn cart-button">🛒 Cart (<span id="cartCount">0</span>)</button>
 
@@ -302,73 +358,156 @@ z-index:1500;
 <footer>© 2026 VaZi Luxury | Nairobi Kenya</footer>
 
 <script>
-// Products 105 items
-let products=[ "Royal Blue Silk Dirac","Emerald Wedding Dirac","Gold Embroidered Dirac","Classic Cotton Baati","Traditional Guntiino",
-"Luxury Khimar","Blue Pattern Macawiis","Classic White Koofiyad","White Khamiis","Modern Dirac Abaya",
-"Somali Print Kaftan","Luxury African Dress","Somali Print Blazer","Cultural Shirt","Luxury Cultural Suit",
-"Somali Wedding Belt","Cultural Jewelry Set","Handmade Sandals","Luxury Necklace","Silk Turban",
-"Red Silk Dirac","Pink Wedding Dirac","Green Embroidered Dirac","Yellow Cotton Baati","Traditional Brown Guntiino",
-"Premium Khimar","Striped Macawiis","White Embroidered Koofiyad","Blue Khamiis","Modern Dirac Abaya Deluxe",
-"Kaftan with Somali Print","African Luxury Dress","Somali Blazer Set","Cultural Tunic","Cultural Suit Deluxe",
-"Wedding Gold Belt","Jewelry Set Deluxe","Handmade Leather Sandals","Diamond Necklace","Silk Headscarf",
-"Purple Silk Dirac","Turquoise Wedding Dirac","Golden Dirac","Soft Cotton Baati","Traditional White Guntiino",
-"Luxury Modest Khimar","Patterned Macawiis","Embroidered Koofiyad","White Khamiis Deluxe","Dirac Abaya Modern",
-"Kaftan Luxury","African Print Dress","Somali Designer Blazer","Traditional Shirt","Cultural Suit Premium",
-"Wedding Silver Belt","Luxury Jewelry","Handmade Sandals Premium","Gold Necklace","Silk Wrap Turban",
-"Blue Silk Dirac","Emerald Dirac","Luxury Gold Dirac","Classic Cotton Baati Deluxe","Traditional Guntiino Premium",
-"Khimar Abaya Deluxe","Macawiis Pattern","Koofiyad Deluxe","Khamiis White Modern","Dirac Abaya Traditional",
-"Kaftan Modern","Luxury African Print Dress","Somali Blazer Premium","Cultural Shirt Deluxe","Cultural Suit Luxury",
-"Wedding Belt Premium","Cultural Jewelry","Leather Sandals Luxury","Necklace Premium","Silk Turban Deluxe",
-"Red Dirac","Emerald Luxury Dirac","Golden Embroidered Dirac","Classic Baati Modern","Guntiino Deluxe",
-"Premium Khimar Abaya","Macawiis Blue","Koofiyad White","Khamiis Traditional","Dirac Abaya Premium",
-"Kaftan Somali","African Dress Modern","Somali Blazer Deluxe","Cultural Shirt Premium","Luxury Cultural Suit",
-"Wedding Belt Gold","Jewelry Set Luxury","Handmade Sandals Deluxe","Luxury Necklace Gold","Silk Turban Premium",
-"Purple Dirac","Wedding Dirac Pink","Embroidery Dirac","Baati Cotton Classic","Traditional Guntiino Deluxe"
+<script>
+let activeCategory = 'All';
+let activeSearch = '';
+
+// Pre-generate stable prices for all products (MUST be before renderProducts)
+let products = [
+  "Royal Blue Silk Dirac","Emerald Wedding Dirac","Gold Embroidered Dirac","Classic Cotton Baati","Traditional Guntiino",
+  "Luxury Khimar","Blue Pattern Macawiis","Classic White Koofiyad","White Khamiis","Modern Dirac Abaya",
+  "Somali Print Kaftan","Luxury African Dress","Somali Print Blazer","Cultural Shirt","Luxury Cultural Suit",
+  "Somali Wedding Belt","Cultural Jewelry Set","Handmade Sandals","Luxury Necklace","Silk Turban",
+  "Red Silk Dirac","Pink Wedding Dirac","Green Embroidered Dirac","Yellow Cotton Baati","Traditional Brown Guntiino",
+  "Premium Khimar","Striped Macawiis","White Embroidered Koofiyad","Blue Khamiis","Modern Dirac Abaya Deluxe",
+  "Kaftan with Somali Print","African Luxury Dress","Somali Blazer Set","Cultural Tunic","Cultural Suit Deluxe",
+  "Wedding Gold Belt","Jewelry Set Deluxe","Handmade Leather Sandals","Diamond Necklace","Silk Headscarf",
+  "Purple Silk Dirac","Turquoise Wedding Dirac","Golden Dirac","Soft Cotton Baati","Traditional White Guntiino",
+  "Luxury Modest Khimar","Patterned Macawiis","Embroidered Koofiyad","White Khamiis Deluxe","Dirac Abaya Modern",
+  "Kaftan Luxury","African Print Dress","Somali Designer Blazer","Traditional Shirt","Cultural Suit Premium",
+  "Wedding Silver Belt","Luxury Jewelry","Handmade Sandals Premium","Gold Necklace","Silk Wrap Turban",
+  "Blue Silk Dirac","Emerald Dirac","Luxury Gold Dirac","Classic Cotton Baati Deluxe","Traditional Guntiino Premium",
+  "Khimar Abaya Deluxe","Macawiis Pattern","Koofiyad Deluxe","Khamiis White Modern","Dirac Abaya Traditional",
+  "Kaftan Modern","Luxury African Print Dress","Somali Blazer Premium","Cultural Shirt Deluxe","Cultural Suit Luxury",
+  "Wedding Belt Premium","Cultural Jewelry","Leather Sandals Luxury","Necklace Premium","Silk Turban Deluxe",
+  "Red Dirac","Emerald Luxury Dirac","Golden Embroidered Dirac","Classic Baati Modern","Guntiino Deluxe",
+  "Premium Khimar Abaya","Macawiis Blue","Koofiyad White","Khamiis Traditional","Dirac Abaya Premium",
+  "Kaftan Somali","African Dress Modern","Somali Blazer Deluxe","Cultural Shirt Premium","Luxury Cultural Suit",
+  "Wedding Belt Gold","Jewelry Set Luxury","Handmade Sandals Deluxe","Luxury Necklace Gold","Silk Turban Premium",
+  "Purple Dirac","Wedding Dirac Pink","Embroidery Dirac","Baati Cotton Classic","Traditional Guntiino Deluxe"
 ];
 
-let cart=[]; let isFirstPurchase=true;
-const list=document.getElementById("productList");
-function generatePrice(){let price=Math.floor(Math.random()*4500 + 1000);price=Math.floor(price/100)*100;if(price>5500)price=5500;return price;}
-function isValuableItem(name){const valuableKeywords=['Wedding','Luxury','Gold','Diamond','Jewelry','Premium','Deluxe','Handmade','Silk'];return valuableKeywords.some(keyword=>name.includes(keyword));}
-function getStockDisplay(name){const isValuable=isValuableItem(name);if(isValuable){if(Math.random()<0.3){return'Limited Stock!';}else{const quantity=Math.floor(Math.random()*10)+1;return quantity+' left';}}else{const quantity=Math.floor(Math.random()*15)+3;return quantity+' left';}}
-function renderProducts(filteredProducts=products){list.innerHTML="";filteredProducts.forEach((name,index)=>{let basePrice=generatePrice();let discountedPrice=Math.floor(basePrice*0.9/100)*100;let imgIndex=index+1;let stockDisplay=getStockDisplay(name);let productHTML=`
-<div class="product">
-<div class="wishlist" onclick="addToWishlist('${name}')">❤</div>
-<div class="discount-tag">10% OFF</div>
-<img src="images/${imgIndex}.jpg.jpeg" alt="${name}">
-<h3>${name}</h3>
-<p class="stock">${stockDisplay}</p>
-<div class="price">
-<span>KSH ${discountedPrice}</span>
-<button class="gold-btn" onclick="addToCart('${name}',${discountedPrice})">Add</button>
-</div>
-</div>`;list.innerHTML+=productHTML;});}
+let cart = [];
+let isFirstPurchase = true;
+const list = document.getElementById("productList");
 
-// Add to cart logic
-function addToCart(name,price){
-let item=cart.find(i=>i.name===name);
-if(item){item.quantity++;}else{cart.push({name,price,quantity:1});}
-let totalItems=cart.reduce((sum,c)=>sum+c.quantity,0);
-let freeItems=Math.floor(totalItems/5);
-cart=cart.filter(c=>c.name!=="🎁 Free Gift");
-if(freeItems>0) cart.push({name:"🎁 Free Gift",price:0,quantity:freeItems});
-let total=cart.reduce((sum,c)=>sum+c.price*c.quantity,0);
-let cashback=0;
-if(isFirstPurchase && total>0){cashback=Math.floor(total*0.05/100)*100;isFirstPurchase=false;}
-updateCart(cashback);
+function generatePrice() {
+  let price = Math.floor(Math.random() * 4500 + 1000);
+  price = Math.floor(price / 100) * 100;
+  if (price > 5500) price = 5500;
+  return price;
 }
-function updateCart(cashback=0){let total=0;let area=document.getElementById("cartItems");area.innerHTML="";cart.forEach((c,i)=>{total+=c.price*c.quantity;area.innerHTML+=`<div class="cart-item"><span>${c.name} x ${c.quantity} - KSH ${c.price*c.quantity}</span><button onclick="removeItem(${i})">x</button></div>`;});document.getElementById("totalPrice").innerText=total-cashback;document.getElementById("cartCount").innerText=cart.reduce((sum,c)=>sum+c.quantity,0);}
-function removeItem(i){cart.splice(i,1);updateCart();}
-function toggleCart(){document.getElementById("cartPanel").classList.toggle("active");}
-function whatsappOrder(){if(cart.length===0){alert("Cart is empty!");return;}let orderList=cart.map(c=>`${c.name} x ${c.quantity}`).join('%0A');window.open(`https://wa.me/254725549418?text=Hello VaZi Luxury I want to order:%0A${orderList}`);}
-function addToWishlist(name){alert(name+" added to wishlist ❤️");}
-function searchProducts(value){let filtered=products.filter(p=>p.toLowerCase().includes(value.toLowerCase()));renderProducts(filtered);}
-window.addEventListener("load",()=>{
-const popup=document.getElementById("welcomePopup");
-setTimeout(()=>{popup.style.display="none";},6000);
-// Auto-add 4 random products on load
-for(let i=0;i<4;i++){let name=products[Math.floor(Math.random()*products.length)];let price=generatePrice();addToCart(name,price);}
-renderProducts();
+
+// Generate once, stable across all renders
+const productPrices = products.map(() => {
+  let base = generatePrice();
+  return Math.floor(base * 0.9 / 100) * 100;
+});
+
+function isValuableItem(name) {
+  const valuableKeywords = ['Wedding','Luxury','Gold','Diamond','Jewelry','Premium','Deluxe','Handmade','Silk'];
+  return valuableKeywords.some(keyword => name.includes(keyword));
+}
+
+function getStockDisplay(name) {
+  const isValuable = isValuableItem(name);
+  if (isValuable) {
+    if (Math.random() < 0.3) { return 'Limited Stock!'; }
+    else { return Math.floor(Math.random() * 10) + 1 + ' left'; }
+  } else {
+    return Math.floor(Math.random() * 15) + 3 + ' left';
+  }
+}
+
+function filterCategory(category, btn) {
+  activeCategory = category;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function searchProducts(value) {
+  activeSearch = value; 
+  applyFilters();
+}
+
+function applyFilters() {
+  let filtered = products;
+  if (activeCategory !== 'All') {
+    filtered = filtered.filter(p => p.toLowerCase().includes(activeCategory.toLowerCase()));
+  }
+  if (activeSearch.trim()) {
+    filtered = filtered.filter(p => p.toLowerCase().includes(activeSearch.toLowerCase()));
+  }
+  renderProducts(filtered);
+}
+
+function renderProducts(filteredProducts = products) {
+  list.innerHTML = "";
+  filteredProducts.forEach((name) => {
+    let originalIndex = products.indexOf(name); 
+    let discountedPrice = productPrices[originalIndex]; 
+    let imgIndex = originalIndex + 1;
+    let stockDisplay = getStockDisplay(name);
+    let productHTML = `
+      <div class="product">
+        <div class="wishlist" onclick="addToWishlist('${name}')">❤</div>
+        <div class="discount-tag">10% OFF</div>
+        <img src="images/${imgIndex}.jpg.jpeg" alt="${name}">
+        <h3>${name}</h3>
+        <p class="stock">${stockDisplay}</p>
+        <div class="price">
+          <span>KSH ${discountedPrice}</span>
+          <button class="gold-btn" onclick="addToCart('${name}',${discountedPrice})">Add</button>
+        </div>
+      </div>`;
+    list.innerHTML += productHTML;
+  });
+}
+
+function addToCart(name, price) {
+  let item = cart.find(i => i.name === name);
+  if (item) { item.quantity++; } else { cart.push({ name, price, quantity: 1 }); }
+  let totalItems = cart.reduce((sum, c) => sum + c.quantity, 0);
+  let freeItems = Math.floor(totalItems / 5);
+  cart = cart.filter(c => c.name !== "🎁 Free Gift");
+  if (freeItems > 0) cart.push({ name: "🎁 Free Gift", price: 0, quantity: freeItems });
+  let total = cart.reduce((sum, c) => sum + c.price * c.quantity, 0);
+  let cashback = 0;
+  if (isFirstPurchase && total > 0) { cashback = Math.floor(total * 0.05 / 100) * 100; isFirstPurchase = false; }
+  updateCart(cashback);
+}
+
+function updateCart(cashback = 0) {
+  let total = 0;
+  let area = document.getElementById("cartItems");
+  area.innerHTML = "";
+  cart.forEach((c, i) => {
+    total += c.price * c.quantity;
+    area.innerHTML += `<div class="cart-item"><span>${c.name} x ${c.quantity} - KSH ${c.price * c.quantity}</span><button onclick="removeItem(${i})">x</button></div>`;
+  });
+  document.getElementById("totalPrice").innerText = total - cashback;
+  document.getElementById("cartCount").innerText = cart.reduce((sum, c) => sum + c.quantity, 0);
+}
+
+function removeItem(i) { cart.splice(i, 1); updateCart(); }
+function toggleCart() { document.getElementById("cartPanel").classList.toggle("active"); }
+function whatsappOrder() {
+  if (cart.length === 0) { alert("Cart is empty!"); return; }
+  let orderList = cart.map(c => `${c.name} x ${c.quantity}`).join('%0A');
+  window.open(`https://wa.me/254725549418?text=Hello VaZi Luxury I want to order:%0A${orderList}`);
+}
+function addToWishlist(name) { alert(name + " added to wishlist ❤️"); }
+
+window.addEventListener("load", () => {
+  const popup = document.getElementById("welcomePopup");
+  setTimeout(() => { popup.style.display = "none"; }, 6000);
+  for (let i = 0; i < 4; i++) {
+    let name = products[Math.floor(Math.random() * products.length)];
+    let price = productPrices[products.indexOf(name)]; 
+    addToCart(name, price);
+  }
+  renderProducts();
 });
 </script>
 </body>
